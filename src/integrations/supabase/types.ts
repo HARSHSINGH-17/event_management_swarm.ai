@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_campaigns: {
+        Row: {
+          body_template: string
+          created_at: string
+          event_name: string
+          failed_count: number
+          id: string
+          sent_count: number
+          status: string
+          subject_template: string
+          total_recipients: number
+          updated_at: string
+        }
+        Insert: {
+          body_template: string
+          created_at?: string
+          event_name?: string
+          failed_count?: number
+          id?: string
+          sent_count?: number
+          status?: string
+          subject_template: string
+          total_recipients?: number
+          updated_at?: string
+        }
+        Update: {
+          body_template?: string
+          created_at?: string
+          event_name?: string
+          failed_count?: number
+          id?: string
+          sent_count?: number
+          status?: string
+          subject_template?: string
+          total_recipients?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_logs: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          participant_email: string | null
+          participant_id: string
+          participant_name: string
+          personalized_body: string | null
+          personalized_subject: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          participant_email?: string | null
+          participant_id: string
+          participant_name: string
+          personalized_body?: string | null
+          personalized_subject?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          participant_email?: string | null
+          participant_id?: string
+          participant_name?: string
+          personalized_body?: string | null
+          personalized_subject?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_logs_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       participants: {
         Row: {
           college: string | null
