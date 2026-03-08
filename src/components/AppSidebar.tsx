@@ -32,6 +32,7 @@ const mainNav = [
   { title: "Email Automation", url: "/email-automation", icon: Mail },
   { title: "Social Media Agent", url: "/social-media", icon: Share2 },
   { title: "Event Scheduler", url: "/scheduler", icon: CalendarClock },
+  { title: "Crisis Management", url: "/crisis-management", icon: ShieldAlert },
   { title: "Swarm Control Center", url: "/swarm-control", icon: Cpu },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Settings", url: "/settings", icon: Settings },

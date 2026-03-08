@@ -30,6 +30,7 @@ const App = () => (
             <Route path="/email-automation" element={<EmailAutomation />} />
             <Route path="/social-media" element={<SocialMedia />} />
             <Route path="/scheduler" element={<Scheduler />} />
+            <Route path="/crisis-management" element={<CrisisManagement />} />
             <Route path="/swarm-control" element={<SwarmControl />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<SettingsPage />} />
