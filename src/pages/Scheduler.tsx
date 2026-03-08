@@ -121,10 +121,9 @@ const Scheduler = () => {
     toast({ title: "Session added" });
   };
 
-  const deleteItem = async (table: string, id: string) => {
-    await supabase.from(table).delete().eq("id", id);
-    fetchAll();
-  };
+  const deleteSpeaker = async (id: string) => { await supabase.from("speakers").delete().eq("id", id); fetchAll(); };
+  const deleteRoom = async (id: string) => { await supabase.from("rooms").delete().eq("id", id); fetchAll(); };
+  const deleteSession = async (id: string) => { await supabase.from("sessions").delete().eq("id", id); fetchAll(); };
 
   // AI Schedule Optimization
   const optimizeSchedule = async () => {
