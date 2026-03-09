@@ -97,12 +97,12 @@ const Index = () => {
                     <stop offset="95%" stopColor="hsl(250, 65%, 55%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(225, 18%, 16%)" />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(215, 15%, 40%)" />
-                <YAxis tick={{ fontSize: 11 }} stroke="hsl(215, 15%, 40%)" />
-                <Tooltip contentStyle={{ background: "hsl(225, 22%, 9%)", border: "1px solid hsl(225, 18%, 16%)", borderRadius: "8px", fontSize: "12px" }} />
-                <Area type="monotone" dataKey="registrations" stroke="hsl(190, 95%, 45%)" fill="url(#regGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="emails" stroke="hsl(270, 80%, 60%)" fill="url(#emailGrad)" strokeWidth={2} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="hsl(220, 8%, 65%)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(220, 8%, 65%)" />
+                <Tooltip contentStyle={{ background: "#fff", border: "1px solid hsl(220, 13%, 91%)", borderRadius: "8px", fontSize: "12px" }} />
+                <Area type="monotone" dataKey="registrations" stroke="hsl(215, 90%, 50%)" fill="url(#regGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="emails" stroke="hsl(250, 65%, 55%)" fill="url(#emailGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
