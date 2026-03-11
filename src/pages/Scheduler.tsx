@@ -75,11 +75,22 @@ const Scheduler = () => {
     const [sp, rm, ss] = await Promise.all([
       supabase.from("speakers").select("*").order("name"),
       supabase.from("rooms").select("*").order("name"),
-      supabase.from("sessions").select("*, speakers(*), rooms(*)").order("start_time", { ascending: true, nullsFirst: false }),
+      supabase.from("sessions").select("*").order("created_at", { ascending: false }),
     ]);
-    if (sp.data) setSpeakers(sp.data);
-    if (rm.data) setRooms(rm.data);
-    if (ss.data) setSessions(ss.data as any);
+    const speakersData: Speaker[] = sp.data ?? [];
+    const roomsData: Room[] = rm.data ?? [];
+    if (sp.error) console.error("speakers fetch:", sp.error);
+    if (rm.error) console.error("rooms fetch:", rm.error);
+    if (ss.error) { console.error("sessions fetch:", ss.error); return; }
+    setSpeakers(speakersData);
+    setRooms(roomsData);
+    // Manually enrich sessions with speaker/room objects
+    const enriched = (ss.data ?? []).map((s: any) => ({
+      ...s,
+      speakers: speakersData.find(sp => sp.id === s.speaker_id) ?? null,
+      rooms: roomsData.find(rm => rm.id === s.room_id) ?? null,
+    }));
+    setSessions(enriched as Session[]);
   }, []);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -107,18 +118,27 @@ const Scheduler = () => {
 
   const addSession = async () => {
     if (!newSession.title) return;
-    const { error } = await supabase.from("sessions").insert({
+    const payload: any = {
       title: newSession.title,
       description: newSession.description || null,
-      speaker_id: newSession.speaker_id || null,
-      room_id: newSession.room_id || null,
       duration_minutes: parseInt(newSession.duration_minutes) || 60,
-    });
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      status: "pending",
+      has_conflict: false,
+    };
+    // Only add FK fields if they have valid values
+    if (newSession.speaker_id && newSession.speaker_id !== "none") payload.speaker_id = newSession.speaker_id;
+    if (newSession.room_id && newSession.room_id !== "none") payload.room_id = newSession.room_id;
+
+    const { error } = await supabase.from("sessions").insert(payload);
+    if (error) {
+      console.error("addSession error:", error);
+      toast({ title: "Error adding session", description: error.message, variant: "destructive" });
+      return;
+    }
     setNewSession({ title: "", description: "", speaker_id: "", room_id: "", duration_minutes: "60" });
     setSessionDialogOpen(false);
-    fetchAll();
-    toast({ title: "Session added" });
+    await fetchAll();
+    toast({ title: "✅ Session added", description: `"${payload.title}" has been added.` });
   };
 
   const deleteSpeaker = async (id: string) => { await supabase.from("speakers").delete().eq("id", id); fetchAll(); };
@@ -147,11 +167,14 @@ const Scheduler = () => {
       }));
       const roomsPayload = rooms.map(r => ({ id: r.id, name: r.name }));
 
-      const { data, error } = await supabase.functions.invoke("optimize-schedule", {
-        body: { sessions: sessionsPayload, rooms: roomsPayload, event_date: eventDate, event_start_hour: "09:00", event_end_hour: "18:00" },
+      const response = await fetch("http://localhost:8000/api/optimize-schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessions: sessionsPayload, rooms: roomsPayload, event_date: eventDate, event_start_hour: "09:00", event_end_hour: "18:00" })
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+      const data = await response.json();
       if (data?.error) throw new Error(data.error);
 
       // Apply schedule to sessions

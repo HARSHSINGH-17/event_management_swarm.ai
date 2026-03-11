@@ -25,3 +25,13 @@ dist-ssr
 
 # Environment Variables
 .env
+
+# Python backend
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/app.db
+*.pyc
+__pycache__/
+.pytest_cache/

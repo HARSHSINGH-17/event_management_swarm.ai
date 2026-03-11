@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Cpu, Bot, CheckCircle2, Loader2, AlertTriangle, Play, RotateCcw,
   Zap, Mail, Share2, CalendarClock, BarChart3, ShieldAlert, Network,
-  ArrowRight, Circle
+  ArrowRight, Circle, Radio
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { streamSwarmWorkflow } from "@/services/orchestrator";
 
 // ── Agent Definitions ──
 interface Agent {
@@ -112,6 +113,7 @@ const SwarmControl = () => {
   const [flowMessages, setFlowMessages] = useState<FlowMessage[]>([]);
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [liveSwarmRunning, setLiveSwarmRunning] = useState(false);
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -192,6 +194,57 @@ const SwarmControl = () => {
     setIsRunning(false);
     setActiveScenario(null);
   }, [spawnFlow, addLog]);
+
+  // ── Live Swarm: streams real agent step updates from Python backend ──
+  const runLiveSwarm = useCallback(async () => {
+    if (liveSwarmRunning || isRunning) return;
+    setLiveSwarmRunning(true);
+    setActiveScenario("Live Swarm Stream");
+    addLog("orchestrator", "crisis", "🔴 LIVE: Starting real swarm — Crisis → Scheduler → Email", "alert");
+
+    try {
+      for await (const event of streamSwarmWorkflow('crisis', {
+        event_context: { name: "Tech Summit 2026", date: "2026-03-20" },
+        crisis: {
+          type: 'speaker_cancellation',
+          affected_entity: { id: 'live-spk', name: 'Live Demo Speaker' }
+        },
+        schedule: {
+          sessions: [{ id: 'ls1', title: 'Live Demo Session', speaker_name: 'Live Demo Speaker', duration_minutes: 60 }],
+          rooms: [{ id: 'lr1', name: 'Main Hall' }],
+        }
+      })) {
+        const agentId = event.agent || 'orchestrator';
+        const knownId = ['scheduler','email','crisis','content','orchestrator'].includes(agentId) ? agentId : 'orchestrator';
+
+        if (event.event === 'agent_start') {
+          setAgents(prev => prev.map(a =>
+            a.id === knownId ? { ...a, status: 'processing' as const, currentTask: `Running step ${event.step}...` } : a
+          ));
+          spawnFlow('orchestrator', knownId, `Step ${event.step}: ${agentId}`, 'primary');
+        }
+
+        if (event.event === 'agent_done' || event.event === 'done') {
+          (event.logs || []).forEach(log =>
+            addLog(knownId, 'orchestrator', log, 'data')
+          );
+          setAgents(prev => prev.map(a =>
+            a.id === knownId ? { ...a, status: 'active' as const, currentTask: 'Done', tasksCompleted: a.tasksCompleted + 1 } : a
+          ));
+        }
+
+        if (event.workflow_complete || event.event === 'done' || event.event === 'stream_end') break;
+        await new Promise(r => setTimeout(r, 300));
+      }
+    } catch (e) {
+      addLog('orchestrator', 'orchestrator', `⚠️ Stream error: ${e instanceof Error ? e.message : String(e)}`, 'alert');
+    } finally {
+      setAgents(prev => prev.map(a => ({ ...a, status: 'idle' as const, currentTask: 'Standing by' })));
+      setLiveSwarmRunning(false);
+      setActiveScenario(null);
+      addLog('orchestrator', 'orchestrator', '✅ Live swarm stream complete', 'notification');
+    }
+  }, [liveSwarmRunning, isRunning, addLog, spawnFlow]);
 
   // SVG helpers
   const getAgentCenter = (agentId: string) => {

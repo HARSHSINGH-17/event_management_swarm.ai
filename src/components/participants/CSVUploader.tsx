@@ -6,6 +6,7 @@ import type { ParticipantInsert } from "@/lib/participants";
 
 export function CSVUploader() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<File | null>(null); // persists after input is cleared
   const [preview, setPreview] = useState<ParticipantInsert[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -14,6 +15,7 @@ export function CSVUploader() {
   const handleFile = useCallback(async (file: File) => {
     setError(null);
     setPreview(null);
+    fileRef.current = file; // save file reference BEFORE input is cleared
     try {
       const ext = file.name.split(".").pop()?.toLowerCase();
       let rows: ParticipantInsert[];
@@ -55,25 +57,29 @@ export function CSVUploader() {
   );
 
   const confirmImport = async () => {
-    if (!preview || !inputRef.current?.files?.[0]) return;
-    const file = inputRef.current.files[0];
+    if (!preview) return; // only require preview — file input may already be cleared
 
     // 1. Upload to Supabase (Database)
     insertMutation.mutate(preview, {
-      onSuccess: () => setPreview(null),
+      onSuccess: () => {
+        setPreview(null);
+        fileRef.current = null;
+      },
     });
 
     // 2. Upload to Local Python Backend (for Email Agent memory)
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      await fetch("http://localhost:8000/api/upload-participants", {
-        method: "POST",
-        body: formData,
-      });
-      console.log("Uploaded to local agent memory");
-    } catch (err) {
-      console.error("Failed to upload to local agent memory", err);
+    if (fileRef.current) {
+      try {
+        const formData = new FormData();
+        formData.append("file", fileRef.current);
+        await fetch("http://localhost:8000/api/upload-participants", {
+          method: "POST",
+          body: formData,
+        });
+        console.log("Uploaded to local agent memory");
+      } catch (err) {
+        console.error("Failed to upload to local agent memory", err);
+      }
     }
   };
 

@@ -1,0 +1,8 @@
+id,name,capacity,location,equipment,notes
+r1,Main Auditorium,500,Building A - Ground Floor,"Stage, Projector 4K, PA System, Livestream, Recording","Primary keynote and panel venue"
+r2,Innovation Lab,80,Building B - Floor 2,"Projector, Whiteboards x4, Laptops x20, Dev workstations","Workshop and hands-on sessions"
+r3,Conference Room Alpha,120,Building A - Floor 1,"Dual Projectors, Mic System, Video Conferencing","Technical talks and breakouts"
+r4,Conference Room Beta,100,Building A - Floor 2,"Projector, Whiteboard, Video Conferencing","Technical talks and breakouts"
+r5,Executive Suite,50,Building C - Floor 3,"Projector, Round Table, Video Conferencing","Small group sessions, ethics rounds"
+r6,Networking Lounge,200,Building A - Atrium,"LED Displays x4, Sound System","Networking, demos, exhibit booths"
+r7,Overflow Room,150,Building B - Floor 1,"Livestream Screen, Basic AV","Overflow viewing for sold-out sessions"

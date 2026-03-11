@@ -1,0 +1,9 @@
+type,affected_entity_id,affected_entity_name,severity,description,delay_minutes
+speaker_cancellation,sp1,Dr. Sarah Chen,critical,"Keynote speaker Dr. Sarah Chen has an emergency and cannot attend the event.",0
+speaker_cancellation,sp2,Prof. James Okafor,high,"Prof. James Okafor's flight was cancelled due to weather. Attending virtually instead.",0
+session_delay,s4,Real-Time Event Data Pipelines,medium,"Technical setup issues in Conference Room Beta. Session delayed.",30
+session_delay,s7,Vector Databases Deep Dive,low,"Previous workshop ran over time. Session starting late.",15
+room_unavailability,r2,Innovation Lab,high,"Water leak detected in Innovation Lab. Room temporarily closed for safety.",0
+room_unavailability,r4,Conference Room Beta,medium,"AV equipment failure in Conference Room Beta. Requires maintenance.",0
+speaker_cancellation,sp5,Dr. Emily Watson,high,"Dr. Emily Watson is unwell and cannot present. Requesting remote participation option.",0
+session_delay,s10,Panel: The Roadmap to AGI,low,"Panel discussion running late. Panellists still in Q&A from previous session.",20

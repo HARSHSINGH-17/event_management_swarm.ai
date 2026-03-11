@@ -2,16 +2,30 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// Create a dummy client if credentials are not provided
+const isConfigured = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY && SUPABASE_URL !== 'https://your-project.supabase.co';
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
+export const supabase = isConfigured 
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        storage: localStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    })
+  : createClient<Database>('https://placeholder.supabase.co', 'placeholder', {
+      auth: {
+        storage: {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {}
+        },
+        persistSession: false,
+        autoRefreshToken: false,
+      }
+    });
+
+export const isSupabaseConfigured = isConfigured;

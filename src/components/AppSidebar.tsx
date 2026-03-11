@@ -8,6 +8,7 @@ import {
   Cpu,
   BarChart3,
   Settings,
+  FolderUp,
   Zap,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
@@ -32,6 +33,7 @@ const mainNav = [
   { title: "Email Automation", url: "/email-automation", icon: Mail },
   { title: "Social Media Agent", url: "/social-media", icon: Share2 },
   { title: "Event Scheduler", url: "/scheduler", icon: CalendarClock },
+  { title: "Data Import", url: "/import", icon: FolderUp },
   { title: "Crisis Management", url: "/crisis-management", icon: ShieldAlert },
   { title: "Swarm Control Center", url: "/swarm-control", icon: Cpu },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },

@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-ollama
 apscheduler
 supabase
 python-dotenv
@@ -9,3 +8,9 @@ pydantic
 pandas
 python-multipart
 openpyxl
+groq
+
+# Auth dependencies
+sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]

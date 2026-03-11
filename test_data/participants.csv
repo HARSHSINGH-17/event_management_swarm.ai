@@ -1,0 +1,16 @@
+id,name,email,organization,registration_type,dietary_requirements,arrival_date
+p1,Alice Thompson,alice.t@techcorp.com,TechCorp Global,VIP,Vegetarian,2026-03-14
+p2,Bob Williams,bob.w@startup.io,StartupIO,General,,2026-03-15
+p3,Carol Singh,carol.s@bigfour.com,BigFour Consulting,Speaker Guest,Vegan,2026-03-14
+p4,David Lee,david.lee@university.edu,State University,Student,,2026-03-15
+p5,Elena Kowalski,elena.k@enterprise.eu,Enterprise EU,VIP,Gluten-Free,2026-03-14
+p6,Frank Osei,frank.o@fintech.gh,FinTech Ghana,General,,2026-03-15
+p7,Grace Kim,grace.kim@ailab.kr,AI Lab Korea,Speaker Guest,,2026-03-14
+p8,Henry Chandra,henry.c@cloudprovider.sg,Cloud Provider SG,General,Halal,2026-03-15
+p9,Isabelle Martin,isabelle.m@eutech.fr,EUTech France,VIP,Vegetarian,2026-03-14
+p10,Johan Nilsson,johan.n@nordic.se,Nordic Tech,General,,2026-03-15
+p11,Kavya Reddy,kavya.r@bangalore.in,Bangalore Tech Hub,General,,2026-03-15
+p12,Liam O'Brien,liam.o@dublinai.ie,Dublin AI Institute,Speaker Guest,,2026-03-14
+p13,Maria Santos,maria.s@saopaulo.br,São Paulo Digital,General,,2026-03-15
+p14,Nathan Brooks,nathan.b@silicon.us,Silicon Valley VC,VIP,,2026-03-14
+p15,Olivia Chen,olivia.c@deepmind.ai,DeepMind,VIP,Vegan,2026-03-14

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO, differenceInMinutes, setHours, startOfDay } from "date-fns";
+import { runSwarmWorkflow } from "@/services/orchestrator";
 
 interface Speaker { id: string; name: string; topic: string | null; }
 interface Room { id: string; name: string; capacity: number | null; }
@@ -123,21 +124,45 @@ const CrisisManagement = () => {
       const roomsPayload = rooms.map(r => ({ id: r.id, name: r.name, capacity: r.capacity }));
       const speakersPayload = speakers.map(sp => ({ id: sp.id, name: sp.name, topic: sp.topic }));
 
-      const { data, error } = await supabase.functions.invoke("resolve-crisis", {
-        body: {
+      const response = await fetch("http://localhost:8000/api/resolve-crisis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           crisis_type: crisisType,
           affected_entity: entity,
           sessions: sessionsPayload,
           rooms: roomsPayload,
           speakers: speakersPayload,
           event_date: "2026-03-15",
-        },
+        })
       });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+      const data = await response.json();
       if (data?.error) throw new Error(data.error);
 
-      // Process logs from AI
+      // ── Swarm Orchestrator: trigger multi-agent chain (Crisis → Scheduler → Email) ──
+      addLog(`[Orchestrator] 🕸️ Launching swarm: Crisis → Scheduler → Email chain...`);
+      try {
+        const swarmResult = await runSwarmWorkflow('crisis', {
+          event_context: { name: "Tech Summit 2026", date: "2026-03-15" },
+          crisis: { type: crisisType as any, affected_entity: entity },
+          schedule: {
+            sessions: sessionsPayload,
+            rooms: roomsPayload,
+          },
+          participants: speakersPayload,
+        });
+        // Merge swarm agent logs into the local log panel
+        (swarmResult.agent_logs || []).forEach(l => addLog(l));
+        if (swarmResult.crisis_resolution?.analysis) {
+          addLog(`[Swarm] ✅ Resolution: ${swarmResult.crisis_resolution.analysis.slice(0, 120)}`);
+        }
+      } catch (swarmErr) {
+        addLog(`[Orchestrator] ⚠️ Swarm chain: ${swarmErr instanceof Error ? swarmErr.message : 'failed'}`);
+      }
+
+      // Process logs from direct AI call too
       const aiLogs: string[] = data.logs || [];
       aiLogs.forEach(l => addLog(l));
 
