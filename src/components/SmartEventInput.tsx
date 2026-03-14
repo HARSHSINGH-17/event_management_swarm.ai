@@ -85,8 +85,8 @@ export const SmartEventInput: React.FC = () => {
 
       const data: ExtractionResponse = await response.json();
       
-      if (!data.success && (data as any).error) {
-        throw new Error((data as any).error);
+      if (!data.success && (data as ExtractionResponse & { error?: string }).error) {
+        throw new Error((data as ExtractionResponse & { error?: string }).error);
       }
 
       setExtractedData(data.extracted_data);
@@ -98,9 +98,9 @@ export const SmartEventInput: React.FC = () => {
       } else {
         setStep('review');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Extraction error:", err);
-      setError(err.message || 'Failed to extract data. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to extract data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -142,8 +142,8 @@ export const SmartEventInput: React.FC = () => {
       const result = await response.json();
       setEventId(result.event_id);
       setStep('success');
-    } catch (err: any) {
-      setError(err.message || 'Failed to apply event data.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to apply event data.');
       setStep('review'); // Go back to review on error
     }
   };

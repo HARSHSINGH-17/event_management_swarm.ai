@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { CheckCircle, Edit, AlertTriangle, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Calendar, Users, MapPin, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, ChevronDown, ChevronUp, Calendar, Users, MapPin, AlertCircle } from 'lucide-react';
+import type { ExtractedData } from './SmartEventInput';
+import type { Question } from './ClarifyingQuestions';
 
 interface ReviewStepProps {
-  extractedData: any;
+  extractedData: ExtractedData;
   answers: Record<string, string>;
-  questions: any[];
+  questions: Question[];
   onApply: () => void;
   onBack: () => void;
   error: string | null;
@@ -95,26 +97,26 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
       <div className="space-y-4 mb-10">
         <ExpandableSection title="Sessions" count={mergedData.sessions?.length || 0} icon={<Calendar className="w-5 h-5" />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             {mergedData.sessions?.map((session: any, i: number) => <SessionCard key={i} session={session} />)}
+             {mergedData.sessions?.map((session, i: number) => <SessionCard key={i} session={session} />)}
           </div>
         </ExpandableSection>
 
         <ExpandableSection title="Speakers" count={mergedData.speakers?.length || 0} icon={<Users className="w-5 h-5" />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mergedData.speakers?.map((speaker: any, i: number) => <SpeakerCard key={i} speaker={speaker} />)}
+                {mergedData.speakers?.map((speaker, i: number) => <SpeakerCard key={i} speaker={speaker} />)}
             </div>
         </ExpandableSection>
 
         <ExpandableSection title="Rooms" count={mergedData.rooms?.length || 0} icon={<MapPin className="w-5 h-5" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {mergedData.rooms?.map((room: any, i: number) => <RoomCard key={i} room={room} />)}
+                {mergedData.rooms?.map((room, i: number) => <RoomCard key={i} room={room} />)}
              </div>
         </ExpandableSection>
 
         {mergedData.crises && mergedData.crises.length > 0 && (
           <ExpandableSection title="Crises Detected" count={mergedData.crises.length} variant="danger" icon={<AlertTriangle className="w-5 h-5" />}>
             <div className="grid grid-cols-1 gap-4">
-               {mergedData.crises.map((crisis: any, i: number) => <CrisisCard key={i} crisis={crisis} />)}
+               {mergedData.crises.map((crisis, i: number) => <CrisisCard key={i} crisis={crisis} />)}
             </div>
           </ExpandableSection>
         )}
@@ -144,9 +146,9 @@ export const ReviewStep: React.FC<ReviewStepProps> = ({
 
 // --- Helper Functions & Inner UI Components ---
 
-function applyAnswersToData(data: any, answers: Record<string, string>, questions: any[]) {
+function applyAnswersToData(data: ExtractedData, answers: Record<string, string>, questions: Question[]): ExtractedData {
   // Deep clone to avoid mutating state directly just in case it passes through
-  const merged = JSON.parse(JSON.stringify(data));
+  const merged: ExtractedData = JSON.parse(JSON.stringify(data));
   
   for (const [idxStr, answer] of Object.entries(answers)) {
     const question = questions[parseInt(idxStr)];
@@ -161,17 +163,20 @@ function applyAnswersToData(data: any, answers: Record<string, string>, question
       if(!merged.event) merged.event = {};
       merged.event.end_date = answer;
     } else if (field === 'speaker_email') {
-      const sp = merged.speakers?.find((s:any) => s.id === entity_id);
+      const sp = merged.speakers?.find((s) => s.id === entity_id);
       if(sp) sp.email = answer;
     } else if (field === 'speaker_affiliation') {
-      const sp = merged.speakers?.find((s:any) => s.id === entity_id);
+      const sp = merged.speakers?.find((s) => s.id === entity_id);
       if(sp) sp.affiliation = answer;
     } else if (field === 'session_start_time') {
-      const ses = merged.sessions?.find((s:any) => s.id === entity_id);
+      const ses = merged.sessions?.find((s) => s.id === entity_id);
       if(ses) ses.start_time = answer;
     } else if (field === 'session_duration') {
-      const ses = merged.sessions?.find((s:any) => s.id === entity_id);
-      if(ses) ses.duration_minutes = parseInt(answer) || session.duration_minutes;
+      const ses = merged.sessions?.find((s) => s.id === entity_id);
+      if(ses) {
+        const parsed = parseInt(answer, 10);
+        if (!isNaN(parsed)) ses.duration_minutes = parsed;
+      }
     }
   }
   return merged;
@@ -193,7 +198,13 @@ const StatCard = ({ label, count, color }: { label: string, count: number, color
   );
 };
 
-const ExpandableSection = ({ title, count, variant = 'primary', icon, children }: any) => {
+const ExpandableSection = ({ title, count, variant = 'primary', icon, children }: {
+  title: string;
+  count: number;
+  variant?: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   
   if (count === 0) return null;
@@ -230,7 +241,7 @@ const ExpandableSection = ({ title, count, variant = 'primary', icon, children }
   );
 };
 
-const SessionCard = ({ session }: any) => (
+const SessionCard = ({ session }: { session: NonNullable<ExtractedData['sessions']>[number] }) => (
   <div className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
      <h4 className="font-bold text-slate-900 mb-2 truncate" title={session.title}>{session.title}</h4>
      <div className="space-y-1.5 text-sm">
@@ -246,7 +257,7 @@ const SessionCard = ({ session }: any) => (
   </div>
 );
 
-const SpeakerCard = ({ speaker }: any) => (
+const SpeakerCard = ({ speaker }: { speaker: NonNullable<ExtractedData['speakers']>[number] }) => (
     <div className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
        <div className="flex items-center gap-3 mb-2">
            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-100 to-teal-50 border border-emerald-200 flex items-center justify-center font-bold text-emerald-700">
@@ -263,7 +274,7 @@ const SpeakerCard = ({ speaker }: any) => (
     </div>
 );
 
-const RoomCard = ({ room }: any) => (
+const RoomCard = ({ room }: { room: NonNullable<ExtractedData['rooms']>[number] }) => (
    <div className="bg-white border rounded-lg p-4 shadow-sm flex items-center justify-between hover:border-purple-200 transition-colors">
        <h4 className="font-bold text-slate-900">{room.name}</h4>
        <div className="px-3 py-1 bg-purple-50 text-purple-700 font-bold border border-purple-100 rounded-full text-xs">
@@ -272,7 +283,7 @@ const RoomCard = ({ room }: any) => (
    </div>
 );
 
-const CrisisCard = ({ crisis }: any) => (
+const CrisisCard = ({ crisis }: { crisis: NonNullable<ExtractedData['crises']>[number] }) => (
    <div className="bg-white border border-rose-200 rounded-lg p-4 shadow-sm flex items-start gap-3">
        <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
        <div>
