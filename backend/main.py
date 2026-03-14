@@ -816,6 +816,85 @@ async def upload_bulk_data(req: BulkDataRequest):
 
 from ai.extraction import EventDataExtractor, merge_answers_into_data, validate_event_data
 
+
+def build_swarm_state(event_id: str, data: dict) -> dict:
+    """Convert extracted event data into a swarm-compatible state object.
+    
+    The swarm state is consumed by the orchestrator and individual agents
+    (crisis, scheduler, email, analytics, content) to bootstrap their
+    context without requiring a separate database query.
+    """
+    event_info = data.get("event", {})
+    sessions = data.get("sessions", [])
+    rooms = data.get("rooms", [])
+    speakers = data.get("speakers", [])
+    crises = data.get("crises", [])
+
+    # Map rooms by name for quick lookup in session enrichment
+    room_map = {r.get("name", ""): r for r in rooms}
+
+    # Build enriched session records referencing room capacity
+    enriched_sessions = []
+    for idx, s in enumerate(sessions):
+        session_entry = {
+            "id": s.get("id", f"session_{idx}"),
+            "title": s.get("title", "Unnamed Session"),
+            "speaker_name": s.get("speaker_name"),
+            "start_time": s.get("start_time"),
+            "end_time": s.get("end_time"),
+            "duration_minutes": s.get("duration_minutes"),
+            "room": s.get("room_name"),
+            "room_capacity": room_map.get(s.get("room_name", ""), {}).get("capacity"),
+        }
+        enriched_sessions.append(session_entry)
+
+    # Build crisis tasks ready for crisis agent
+    crisis_tasks = []
+    for idx, c in enumerate(crises):
+        crisis_tasks.append({
+            "id": f"crisis_{idx}",
+            "type": c.get("type", "unknown"),
+            "description": c.get("description", ""),
+            "severity": c.get("severity", "medium"),
+            "status": "pending",
+            "assigned_agent": "crisis",
+        })
+
+    return {
+        "event_id": event_id,
+        "event": {
+            "name": event_info.get("name"),
+            "start_date": event_info.get("start_date"),
+            "end_date": event_info.get("end_date"),
+            "location": event_info.get("location"),
+            "theme": event_info.get("theme"),
+        },
+        "sessions": enriched_sessions,
+        "rooms": rooms,
+        "speakers": speakers,
+        "crises": crisis_tasks,
+        "agent_contexts": {
+            "orchestrator": {
+                "total_sessions": len(sessions),
+                "total_rooms": len(rooms),
+                "total_speakers": len(speakers),
+                "open_crises": len(crisis_tasks),
+            },
+            "crisis": {
+                "pending_tasks": crisis_tasks,
+            },
+            "scheduler": {
+                "sessions": enriched_sessions,
+                "rooms": rooms,
+            },
+            "email": {
+                "speakers": speakers,
+                "event_name": event_info.get("name"),
+            },
+        },
+        "imported_at": datetime.now().isoformat(),
+    }
+
 class ExtractRequest(BaseModel):
     text: str
 
@@ -903,15 +982,16 @@ async def apply_extracted_data(request: dict):
             }
         )
     
-    # Save to database or state (for now, just return success)
-    # Integrating with swarm state management in later phases
+    # Build swarm-compatible state for orchestration agents
     event_id = f"event_{datetime.now().timestamp()}"
-    
+    swarm_state = build_swarm_state(event_id, merged_data)
+
     return {
         "success": True,
         "event_id": event_id,
         "message": "Event created successfully",
         "data": merged_data,
+        "swarm_state": swarm_state,
         "stats": {
             "sessions_created": len(merged_data.get("sessions", [])),
             "rooms_created": len(merged_data.get("rooms", [])),

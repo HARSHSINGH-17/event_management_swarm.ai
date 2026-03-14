@@ -64,6 +64,7 @@ export const SmartEventInput: React.FC = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [eventId, setEventId] = useState<string | null>(null);
+  const [swarmState, setSwarmState] = useState<any | null>(null);
   const navigate = useNavigate();
 
   // Step 1: Extract data
@@ -141,6 +142,9 @@ export const SmartEventInput: React.FC = () => {
 
       const result = await response.json();
       setEventId(result.event_id);
+      if (result.swarm_state) {
+        setSwarmState(result.swarm_state);
+      }
       setStep('success');
     } catch (err: any) {
       setError(err.message || 'Failed to apply event data.');
@@ -157,6 +161,7 @@ export const SmartEventInput: React.FC = () => {
     setAnswers({});
     setError(null);
     setEventId(null);
+    setSwarmState(null);
   };
 
   return (
@@ -233,7 +238,7 @@ export const SmartEventInput: React.FC = () => {
              <SuccessStep
                eventId={eventId}
                onStartOver={handleStartOver}
-               onGoToSwarm={() => navigate('/swarm-control')}
+               onGoToSwarm={() => navigate('/swarm-control', { state: { importedEvent: swarmState } })}
              />
           </div>
         )}

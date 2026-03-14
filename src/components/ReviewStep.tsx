@@ -171,7 +171,7 @@ function applyAnswersToData(data: any, answers: Record<string, string>, question
       if(ses) ses.start_time = answer;
     } else if (field === 'session_duration') {
       const ses = merged.sessions?.find((s:any) => s.id === entity_id);
-      if(ses) ses.duration_minutes = parseInt(answer) || session.duration_minutes;
+      if(ses) ses.duration_minutes = parseInt(answer) || ses.duration_minutes;
     }
   }
   return merged;

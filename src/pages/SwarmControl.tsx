@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Cpu, Bot, CheckCircle2, Loader2, AlertTriangle, Play, RotateCcw,
   Zap, Mail, Share2, CalendarClock, BarChart3, ShieldAlert, Network,
@@ -106,7 +107,35 @@ const FLOW_SCENARIOS = [
   },
 ];
 
+interface ImportedEvent {
+  event_id?: string;
+  event?: {
+    name?: string;
+    start_date?: string;
+    end_date?: string;
+    location?: string;
+  };
+  agent_contexts?: {
+    orchestrator?: {
+      total_sessions?: number;
+      total_rooms?: number;
+      total_speakers?: number;
+      open_crises?: number;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface SwarmControlLocationState {
+  importedEvent?: ImportedEvent | null;
+}
+
 const SwarmControl = () => {
+  const location = useLocation();
+  const importedEvent = (location.state as SwarmControlLocationState)?.importedEvent ?? null;
+  const [importedEventDismissed, setImportedEventDismissed] = useState(false);
+
   const [agents, setAgents] = useState<Agent[]>(
     AGENT_DEFS.map(a => ({ ...a, status: "idle" as const, currentTask: "Standing by" }))
   );
@@ -272,6 +301,32 @@ const SwarmControl = () => {
         </div>
         <p className="text-sm text-muted-foreground mt-1">Real-time AI agent network visualization & operations</p>
       </div>
+
+      {/* Imported Event Banner */}
+      {importedEvent && !importedEventDismissed && (
+        <div className="animate-fade-in rounded-xl border border-green-300 bg-green-50 p-4 flex items-start gap-3 shadow-sm">
+          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-green-900">
+              Event imported: <span className="font-extrabold">{importedEvent.event?.name || 'Unnamed Event'}</span>
+            </p>
+            <p className="text-xs text-green-700 mt-0.5">
+              {importedEvent.agent_contexts?.orchestrator?.total_sessions ?? 0} sessions &bull;{" "}
+              {importedEvent.agent_contexts?.orchestrator?.total_rooms ?? 0} rooms &bull;{" "}
+              {importedEvent.agent_contexts?.orchestrator?.total_speakers ?? 0} speakers &bull;{" "}
+              {importedEvent.agent_contexts?.orchestrator?.open_crises ?? 0} crises — agents are ready to execute.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setImportedEventDismissed(true)}
+            className="text-green-500 hover:text-green-700 text-xs font-bold ml-2 shrink-0"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
