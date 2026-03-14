@@ -20,6 +20,8 @@ import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import DataImport from "./pages/DataImport";
 
+import { SmartEventInput } from "./components/SmartEventInput";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -47,6 +49,7 @@ const App = () => (
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/import" element={<DataImport />} />
+                <Route path="/smart-input" element={<SmartEventInput />} />
               </Route>
             </Route>
 

@@ -1,11 +1,11 @@
-id,name,email,bio,expertise,company,confirmed
-sp1,Dr. Sarah Chen,sarah.chen@airesearch.org,"Leading AI researcher with 15 years in autonomous systems. PhD from MIT, published 80+ papers on multi-agent systems.","Multi-Agent Systems, Reinforcement Learning, AI Safety","MIT AI Lab",true
-sp2,Prof. James Okafor,james.okafor@techuniv.edu,"Chair of Computer Science at Tech University. Pioneer in distributed AI systems. Author of 'Swarm Intelligence: A Primer'.","Swarm Intelligence, Distributed Systems, Cloud Computing","Tech University",true
-sp3,Dr. Priya Sharma,priya.sharma@llmcorp.ai,"Head of AI at LLMCorp. Led development of 3 enterprise LLM deployments. Regular speaker at NeurIPS.","LLMs, Prompt Engineering, NLP","LLMCorp AI",true
-sp4,Marcus Johnson,marcus.j@datastream.io,"Senior Data Architect at DataStream. Built real-time pipelines handling 10TB/day. Open-source contributor.","Data Engineering, Kafka, Apache Spark","DataStream Inc",true
-sp5,Dr. Emily Watson,emily.watson@ethicsai.org,"Director of the Center for AI Ethics. Former policy advisor to the UN AI committee.","AI Ethics, Policy, Governance","Center for AI Ethics",true
-sp6,Hiroshi Tanaka,h.tanaka@vectordb.jp,"Co-founder of VectorDB Japan. 12 years in database internals. Contributed to PostgreSQL extensions.","Databases, Vector Search, Performance","VectorDB Japan",true
-sp7,Lisa Patel,lisa.patel@streamtech.com,"Principal Engineer at StreamTech (formerly Netflix). Architect of their real-time recommendation engine.","Recommendation Systems, ML Systems, Scale","StreamTech",true
-sp8,Dr. Ananya Gupta,ananya.gupta@rllab.ai,"Postdoctoral researcher at RL Lab. Specializes in scheduling optimization using reinforcement learning algorithms.","Reinforcement Learning, Optimization, Scheduling","RL Lab",true
-sp9,Event Organizing Committee,organizers@eventswarm.ai,"The core organizing team for Event Swarm AI 2026.","Event Management, AI","Event Swarm AI",true
-sp10,Dr. Ravi Kumar,ravi.kumar@cloudai.in,"CTO of CloudAI. Built AI infrastructure serving 50M users. Speaker at AWS re:Invent.","Cloud, MLOps, Infrastructure","CloudAI India",true
+name,email,bio,topic
+Dr. Sarah Chen,sarah.chen@airesearch.org,"Leading AI researcher with 15 years in autonomous systems. PhD from MIT.",Multi-Agent Systems
+Prof. James Okafor,james.okafor@techuniv.edu,"Chair of Computer Science. Pioneer in distributed AI systems.","Swarm Intelligence"
+Dr. Priya Sharma,priya.sharma@llmcorp.ai,"Head of AI at LLMCorp. Led development of 3 enterprise LLM deployments.","LLMs and Prompt Engineering"
+Marcus Johnson,marcus.j@datastream.io,"Senior Data Architect. Built real-time pipelines handling 10TB/day.","Data Engineering"
+Dr. Emily Watson,emily.watson@ethicsai.org,"Director of the Center for AI Ethics. Former UN AI policy advisor.","AI Ethics and Policy"
+Hiroshi Tanaka,h.tanaka@vectordb.jp,"Co-founder of VectorDB Japan. 12 years in database internals.","Vector Databases"
+Lisa Patel,lisa.patel@streamtech.com,"Principal Engineer at StreamTech (formerly Netflix).","ML Systems at Scale"
+Dr. Ananya Gupta,ananya.gupta@rllab.ai,"Postdoctoral researcher specialising in scheduling optimisation.","Reinforcement Learning"
+Event Committee,organizers@eventswarm.ai,"The core organizing team for Event Swarm AI 2026.","Event Management"
+Dr. Ravi Kumar,ravi.kumar@cloudai.in,"CTO of CloudAI. Built AI infrastructure serving 50M users.","Cloud and MLOps"

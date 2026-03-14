@@ -145,6 +145,16 @@ const Scheduler = () => {
   const deleteRoom = async (id: string) => { await supabase.from("rooms").delete().eq("id", id); fetchAll(); };
   const deleteSession = async (id: string) => { await supabase.from("sessions").delete().eq("id", id); fetchAll(); };
 
+  // Helper: convert "HH:MM" from API → full ISO timestamp using eventDate
+  const toISO = (timeStr: string | null | undefined, date: string): string | null => {
+    if (!timeStr) return null;
+    // Already a full ISO string
+    if (timeStr.includes("T") || timeStr.includes("-")) return timeStr;
+    // "HH:MM" or "HH:MM:SS" → combine with date
+    const t = timeStr.length === 5 ? timeStr + ":00" : timeStr;
+    return `${date}T${t}`;
+  };
+
   // AI Schedule Optimization
   const optimizeSchedule = async () => {
     if (sessions.length === 0 || rooms.length === 0) {
@@ -170,33 +180,68 @@ const Scheduler = () => {
       const response = await fetch("http://localhost:8000/api/optimize-schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessions: sessionsPayload, rooms: roomsPayload, event_date: eventDate, event_start_hour: "09:00", event_end_hour: "18:00" })
+        body: JSON.stringify({
+          sessions: sessionsPayload,
+          rooms: roomsPayload,
+          event_date: eventDate,
+          event_start_hour: "09:00",
+          event_end_hour: "18:00",
+        })
       });
 
       if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
       const data = await response.json();
       if (data?.error) throw new Error(data.error);
 
-      // Apply schedule to sessions
-      const schedule = data.schedule || [];
-      const logs: string[] = data.logs || [];
+      // The agent may return schedule in different shapes — handle both
+      const schedule: any[] = data.schedule ?? data.optimized ?? [];
+      const logs: string[] = data.logs ?? data.agent_logs ?? [];
       logs.forEach(l => addLog(l));
 
-      for (const slot of schedule) {
-        await supabase.from("sessions").update({
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          room_id: slot.room_id,
-          has_conflict: slot.has_conflict || false,
-          conflict_note: slot.conflict_note || null,
-          status: "scheduled",
-        }).eq("id", slot.session_id);
+      if (!schedule.length) {
+        addLog("[Scheduler Agent] No schedule items returned — check backend logs");
+        toast({ title: "Schedule empty", description: "Agent ran but returned no slots. Try again.", variant: "destructive" });
+        return;
       }
 
-      addLog(`[Scheduler Agent] Schedule applied — ${schedule.length} sessions scheduled`);
+      addLog(`[Scheduler Agent] Received ${schedule.length} scheduled slots — writing to Supabase...`);
+
+      // Apply schedule: convert HH:MM → ISO before persisting
+      let applied = 0;
+      for (const slot of schedule) {
+        const sessionId = slot.session_id ?? slot.id;
+        if (!sessionId) continue;
+
+        const startISO = toISO(slot.start_time, eventDate);
+        const endISO   = toISO(slot.end_time,   eventDate);
+
+        const { error } = await supabase.from("sessions").update({
+          start_time:    startISO,
+          end_time:      endISO,
+          room_id:       slot.room_id   || undefined,
+          has_conflict:  slot.has_conflict  ?? false,
+          conflict_note: slot.conflict_note ?? null,
+          status:        "scheduled",
+        }).eq("id", sessionId);
+
+        if (error) {
+          addLog(`[Scheduler Agent] ✗ Failed updating session ${sessionId}: ${error.message}`);
+        } else {
+          applied++;
+        }
+      }
+
+      addLog(`[Scheduler Agent] ✓ ${applied}/${schedule.length} sessions scheduled on ${eventDate}`);
       if (data.summary) addLog(`[Scheduler Agent] ${data.summary}`);
-      toast({ title: "Schedule optimized!", description: data.summary || "All sessions have been scheduled." });
-      fetchAll();
+
+      toast({
+        title: "Schedule optimized!",
+        description: `${applied} sessions scheduled. Check the Calendar & Timeline tabs.`,
+      });
+
+      // Re-fetch so Calendar / Timeline tabs populate
+      await fetchAll();
+
     } catch (e: any) {
       addLog(`[Scheduler Agent] ✗ Error: ${e.message}`);
       toast({ title: "Optimization failed", description: e.message, variant: "destructive" });
@@ -204,6 +249,7 @@ const Scheduler = () => {
       setOptimizing(false);
     }
   };
+
 
   const scheduledSessions = sessions.filter(s => s.start_time && s.end_time);
 

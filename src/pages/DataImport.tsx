@@ -36,13 +36,12 @@ const SLOTS: SlotDef[] = [
     accent: "text-primary",
     badge: "bg-primary/15 text-primary",
     hint: "Upload rooms first so sessions can reference them",
-    columns: "id, name, capacity, location",
+    columns: "name, capacity",
     supabaseTable: "rooms",
     mapRow: r => ({
-      id: r.id,
       name: r.name,
-      capacity: parseInt(r.capacity) || 100,
-      location: r.location || null,
+      capacity: parseInt(r.capacity) || 0,
+      // id is intentionally omitted — Supabase auto-generates UUID
     }),
   },
   {
@@ -52,14 +51,14 @@ const SLOTS: SlotDef[] = [
     accent: "text-neon-cyan",
     badge: "bg-neon-cyan/15 text-neon-cyan",
     hint: "Upload speakers before sessions",
-    columns: "id, name, email, bio, expertise",
+    columns: "name, email, bio, topic",
     supabaseTable: "speakers",
     mapRow: r => ({
-      id: r.id,
+      // id intentionally omitted — Supabase auto-generates UUID
       name: r.name,
       email: r.email || null,
       bio: r.bio || null,
-      topic: r.expertise || r.topic || null,
+      topic: r.topic || r.expertise || null,
     }),
   },
   {
@@ -68,17 +67,16 @@ const SLOTS: SlotDef[] = [
     icon: CalendarClock,
     accent: "text-neon-green",
     badge: "bg-neon-green/15 text-neon-green",
-    hint: "Talks, workshops and keynotes — requires rooms & speakers",
-    columns: "id, title, speaker_id, room_id, duration_minutes, description",
+    hint: "Titles and durations only — assign rooms/speakers in the Scheduler page",
+    columns: "title, duration_minutes, description",
     supabaseTable: "sessions",
     mapRow: r => ({
-      id: r.id,
+      // id/speaker_id/room_id intentionally omitted — Supabase generates UUID,
+      // FKs are assigned interactively in the Scheduler page
       title: r.title,
-      duration_minutes: parseInt(r.duration_minutes) || 60,
-      room_id: r.room_id || null,
-      speaker_id: r.speaker_id || null,
       description: r.description || null,
-      status: "scheduled",
+      duration_minutes: parseInt(r.duration_minutes) || 60,
+      status: "pending",
       has_conflict: false,
       conflict_note: null,
     }),
@@ -95,6 +93,8 @@ const SLOTS: SlotDef[] = [
     mapRow: r => ({ ...r, id: `crisis-${Date.now()}-${Math.random().toString(36).slice(2)}` }),
   },
 ];
+
+
 
 // ── CSV parser (handles quoted commas) ────────────────────────────────────
 function parseCSV(text: string): Record<string, string>[] {
